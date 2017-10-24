@@ -15,8 +15,8 @@ function currentTime() {
 }
 
 function minutesToString(minutes) {
-	var hour = parseInt(minutes/60);
-	var min = minutes%60;
+	var hour = addZero(parseInt(minutes/60));
+	var min = addZero(minutes%60);
 
 	return(hour + ":" + min);
 }
