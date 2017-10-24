@@ -25,19 +25,24 @@ function convertTimeToMinutes(h, m) {
 	return (h*60+m);
 }
 
+function validTimeString(timeStr) {
+	var timeArray = timeStr.split(":");
+	if (isNaN(parseInt(timeArray[0])) || isNaN(parseInt(timeArray[1]))) {
+		return false;
+	}
+	return true;
+}
+
 function nextArrivalTime(start, freq) {
 
-	console.log("Start: " + start);
-	console.log("Freq: " +  freq);
     var current = currentTime();
     var currArray = current.split(":");
     var currentMinutes = convertTimeToMinutes(parseInt(currArray[0]), parseInt(currArray[1]));
     
+    console.log("Current:" + currentMinutes);
+
     var startArray = start.split(":");
     var startMinutes = convertTimeToMinutes(parseInt(startArray[0]), parseInt(startArray[1]));
-
-    console.log("Current Min: " + currentMinutes);
-    console.log("Start Min: " + startMinutes);
 
     if (currentMinutes <= startMinutes) {
     	// case where the train hasn't even started

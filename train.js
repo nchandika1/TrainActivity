@@ -1,4 +1,5 @@
  $(document).ready(function() {
+
   // Initialize Firebase
   var config = {
     apiKey: "AIzaSyC7QVIJx72Uv8Fo-2U_Ece4dzYNw9X1lnI",
@@ -35,9 +36,11 @@
   }
 
   function addRowElement(name, destination, ftt, frequency) {
+    var nextTrainInfo = [];
+    nextTrainInfo = nextArrivalTime(ftt, frequency);
+
     var row = $("<tr>");
     row.attr('id', "table-row");
-    nextTrainInfo = nextArrivalTime(ftt, frequency);
     var markup = "<td>" + name + "</td>" +
                   "<td>" + destination + "</td>" +
                   "<td>" + frequency + "</td>" +
@@ -55,6 +58,21 @@
     var trainDest = $("#destination").val().trim();
     var firstTrainTime = $("#first-train-time").val().trim();
     var trainFreq = $("#frequency").val().trim();
+
+    if (trainName == "" || trainDest == "" || firstTrainTime == "" || trainFreq == "") {
+      alert("Please enter all fields to add a train!")
+      return;
+    }
+
+    if (isNaN(parseInt(trainFreq))) {
+      alert("Please enter a number for train frequency!");
+      return;
+    }
+
+    if (!validTimeString(firstTrainTime)) {
+      alert("Please enter a valid time in military HH:MM format!");
+      return;
+    }
 
     // Store the data on firebase first; Key is the train-name
     var trainRef = database.ref();
