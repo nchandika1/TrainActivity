@@ -14,50 +14,37 @@
 
 
   database.ref().on("value", function(snapshot) {
-
-    // console.log("value" + snapshot.val().name);
-
+    //populateTable();
   });
 
   function populateTable() {
+    $("#table-body").empty();
+
     var trainRef = database.ref();
 
-    trainRef.once('value', function(snapshot){
-      var count = 1;
-      snapshot.forEach(function(childSnapshot){
+    trainRef.once('value', function(snapshot) {
+      snapshot.forEach(function(childSnapshot) {
         var childKey = childSnapshot.key;
         var childData = childSnapshot.val();
 
         console.log("populate: " + childKey);
         // Create Table Rows now
-        var row = $("<tr>");
-        row.attr('id', "table-row");
-        var markup = "<td>" + childKey + "</td>" +
-                  "<td>" + childData.destination+ "</td>" +
-                  "<td>" + childData.frequency + "</td>" +
-                  "<td>" + " " + "</td>" +
-                  "<td>" + " " + "</td>";
-
-        row.html(markup);
-        $("#train-table").append(row);
-
-        // var destination = "<tr><td>" + childData.destination + "</td></tr>";
-        // $("#train-table").append(destination);
-        count++;
+        addRowElement(childKey, childData.destination, childData.ftt, childData.frequency);
       });
     });
   }
 
-  function getTrainInformation() {
-    var trainRef = database.ref();
-    trainRef.once('value', function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        var childKey = childSnapshot.key;
-        var childData = childSnapshot.val();
-        // ...
-        console.log("Database " + childKey + " " + childData.destination);
-      });
-    });
+  function addRowElement(name, destination, ftt, frequency) {
+    var row = $("<tr>");
+    row.attr('id', "table-row");
+    nextTrainInfo = nextArrivalTime(ftt, frequency);
+    var markup = "<td>" + name + "</td>" +
+                  "<td>" + destination + "</td>" +
+                  "<td>" + frequency + "</td>" +
+                  "<td>" + nextTrainInfo[0] + "</td>" +
+                  "<td>" + nextTrainInfo[1] + "</td>";
+    row.html(markup);          
+    $("#table-body").append(row);
   }
 
   function submitTrainInformation() {
@@ -74,9 +61,16 @@
     var updates = {};
     updates[trainName] = {"destination": trainDest, "ftt": firstTrainTime, "frequency": trainFreq};
     trainRef.update(updates);
-    
-    
+   
+    // Add this row to the table
+    addRowElement(trainName, trainDest, firstTrainTime, parseInt(trainFreq));
+
+    $("#train-name").val("");
+    $("#destination").val("");
+    $("#first-train-time").val("");
+    $("#frequency").val("");
   }
+
   populateTable();
   $("#submit-button").on("click", submitTrainInformation);
 });
