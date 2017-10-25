@@ -1,3 +1,10 @@
+/*************
+
+MAIN LOGIC FOR POPULATING FIRE BASE AND THE WEBPAGE WITH LATEST TRAIN INFORMATION
+
+**************/
+
+
  $(document).ready(function() {
 
   // Initialize Firebase
@@ -11,32 +18,36 @@
   };
   firebase.initializeApp(config);
 
+  //Get ref to the database
   var database = firebase.database();
 
-
-  database.ref().on("value", function(snapshot) {
-    //populateTable();
-  });
-
+  // This function retrieves database snapshot from the firebase
+  // Add populate Table on the webpage with the database entries
   function populateTable() {
+
+    // Let us first clear all table entries since we are getting the latest from the firebase
     $("#table-body").empty();
 
     var trainRef = database.ref();
 
+    // Get one big snapshot first and then loop thru the children
+    // Each child represents one train information
     trainRef.once('value', function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
-        var childKey = childSnapshot.key;
         var childData = childSnapshot.val();
 
-        console.log("populate: " + childKey);
         // Create Table Rows now
-        addRowElement(childKey, childData.destination, childData.ftt, childData.frequency);
+        addRowElement(childData.name, childData.destination, childData.ftt, childData.frequency);
       });
     });
   }
 
+  // This function populates the table rows on the web page
+  // This dynamically calculates the Next Train and Minutes Away from the ftt and frequency values
   function addRowElement(name, destination, ftt, frequency) {
     var nextTrainInfo = [];
+
+    // Calculate the Next Train and Minutes Away dynamically
     nextTrainInfo = nextArrivalTime(ftt, frequency);
 
     var row = $("<tr>");
@@ -50,6 +61,7 @@
     $("#table-body").append(row);
   }
 
+  // Click function for Submit Button
   function submitTrainInformation() {
 
     event.preventDefault();
@@ -59,6 +71,7 @@
     var firstTrainTime = $("#first-train-time").val().trim();
     var trainFreq = $("#frequency").val().trim();
 
+    // Error conditions
     if (trainName == "" || trainDest == "" || firstTrainTime == "" || trainFreq == "") {
       alert("Please enter all fields to add a train!")
       return;
@@ -74,21 +87,27 @@
       return;
     }
 
-    // Store the data on firebase first; Key is the train-name
-    var trainRef = database.ref();
-    var updates = {};
-    updates[trainName] = {"destination": trainDest, "ftt": firstTrainTime, "frequency": trainFreq};
-    trainRef.update(updates);
-   
-    // Add this row to the table
-    addRowElement(trainName, trainDest, firstTrainTime, parseInt(trainFreq));
+    // Store the data on firebase first
+    database.ref().push({
+      name: trainName,
+      destination: trainDest, 
+      ftt: firstTrainTime, 
+      frequency: trainFreq,
+      dateAdded: firebase.database.ServerValue.TIMESTAMP
+    });
 
+    // Create Table Rows now
+    addRowElement(trainName, trainDest, firstTrainTime, trainFreq);
+
+    // Clear the form
     $("#train-name").val("");
     $("#destination").val("");
     $("#first-train-time").val("");
     $("#frequency").val("");
   }
 
+  // Populate table at the start and then listen for submit click events for further events.
   populateTable();
+  // Install listener for Submit Button
   $("#submit-button").on("click", submitTrainInformation);
 });
